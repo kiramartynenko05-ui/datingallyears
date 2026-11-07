@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Обратный отсчёт</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Outfit', 'Montserrat', sans-serif;
+            transition: background 0.5s ease;
+        }
+        
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .gradient-1 { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%); }
+        .gradient-2 { background: linear-gradient(135deg, #050505 0%, #1a102f 50%, #051329 100%); }
+        .gradient-3 { background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); }
+        .gradient-4 { background: linear-gradient(135deg, #16062a 0%, #3a0058 50%, #68007a 100%); }
+        .gradient-5 { background: linear-gradient(135deg, #111827 0%, #064e3b 50%, #022c22 100%); }
+
+        /* Custom scrollbar for settings modal */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body id="bg-container" class="gradient-1 min-h-screen text-white relative flex flex-col justify-between overflow-x-hidden bg-cover bg-center bg-no-repeat transition-all duration-700">
+
+    <!-- Top Floating Header / Controls Bar -->
+    <header id="controls-bar" class="w-full p-4 md:p-6 flex justify-between items-center z-20 transition-opacity duration-300">
+        <div class="flex items-center gap-2 glass-panel px-4 py-2 rounded-full text-xs md:text-sm tracking-wider uppercase font-semibold text-gray-300">
+            <i class="fa-solid font-bold fa-clock text-indigo-400"></i>
+            <span>Italian Time (Rome)</span>
+        </div>
+        
+        <div class="flex gap-2">
+            <button id="toggle-settings-btn" class="glass-panel hover:bg-white/20 text-white w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:scale-105" title="Настройки">
+                <i class="fa-solid fa-sliders text-lg"></i>
+            </button>
+            <button id="hide-ui-btn" class="glass-panel hover:bg-white/20 text-white w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:scale-105" title="Скрыть интерфейс">
+                <i class="fa-solid fa-eye-slash text-lg"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col items-center justify-center px-4 py-8 z-10 text-center">
+        
+        <!-- Target Info Tag -->
+        <div class="mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-panel text-xs md:text-sm font-medium text-indigo-200 tracking-wide shadow-inner">
+            <i class="fa-solid fa-calendar-check text-indigo-400"></i>
+            <span>26 dicembre, 15:00:00</span>
+        </div>
+
+        <!-- Countdown Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 max-w-4xl w-full mb-10">
+            <!-- Days -->
+            <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 flex flex-col items-center justify-center transform hover:scale-105 transition-transform duration-300">
+                <span id="days" class="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-100 to-indigo-200">00</span>
+                <span class="text-xs sm:text-sm uppercase tracking-widest text-indigo-200/80 font-medium mt-2">Giorni</span>
+            </div>
+
+            <!-- Hours -->
+            <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 flex flex-col items-center justify-center transform hover:scale-105 transition-transform duration-300">
+                <span id="hours" class="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-100 to-indigo-200">00</span>
+                <span class="text-xs sm:text-sm uppercase tracking-widest text-indigo-200/80 font-medium mt-2">Ore</span>
+            </div>
+
+            <!-- Minutes -->
+            <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 flex flex-col items-center justify-center transform hover:scale-105 transition-transform duration-300">
+                <span id="minutes" class="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-100 to-indigo-200">00</span>
+                <span class="text-xs sm:text-sm uppercase tracking-widest text-indigo-200/80 font-medium mt-2">Minuti</span>
+            </div>
+
+            <!-- Seconds -->
+            <div class="glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 flex flex-col items-center justify-center transform hover:scale-105 transition-transform duration-300">
+                <span id="seconds" class="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-100 to-indigo-200">00</span>
+                <span class="text-xs sm:text-sm uppercase tracking-widest text-indigo-200/80 font-medium mt-2">Secondi</span>
+            </div>
+        </div>
+
+        <!-- Editable Custom Message Below Countdown -->
+        <div class="max-w-3xl w-full px-4">
+            <h1 id="custom-text-display" 
+                class="text-2xl sm:text-4xl md:text-5xl font-bold tracking-wide leading-tight drop-shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
+                title="Clicca qua per modificare rapido">
+                Fino il 26 dicembre!
+            </h1>
+            <p class="text-xs text-white/50 mt-2 font-light tracking-widest uppercase">Clicca qua per cambiare</p>
+        </div>
+    </main>
+
+    <!-- Footer Status / Time Info -->
+    <footer id="footer-bar" class="w-full p-4 text-center text-xs text-white/60 z-20 transition-opacity duration-300">
+        <p id="target-date-string">Data obiettivo: 26 dicembre 15:00:00 UTC+1 (Roma)</p>
+    </footer>
+
+    <!-- Unhide UI Floating Button (Visible only when UI is hidden) -->
+    <button id="show-ui-btn" class="hidden fixed bottom-6 right-6 z-50 glass-panel hover:bg-white/20 text-white w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 shadow-2xl">
+        <i class="fa-solid fa-eye text-xl"></i>
+    </button>
+
+    <!-- Settings Modal Drawer -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-end opacity-0 pointer-events-none transition-opacity duration-300">
+        <div id="modal-panel" class="w-full max-w-md bg-slate-900/95 text-white h-full p-6 overflow-y-auto border-l border-white/10 flex flex-col justify-between transform translate-x-full transition-transform duration-300">
+            
+            <div>
+                <!-- Header -->
+                <div class="flex justify-between items-center border-b border-white/10 pb-4 mb-6">
+                    <h2 class="text-xl font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-paint-roller text-indigo-400"></i> Impostazioni aspetto
+                    </h2>
+                    <button id="close-modal-btn" class="text-gray-400 hover:text-white p-2 text-lg">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- Custom Text Input Section -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold mb-2 text-indigo-200">Testo sotto il countdown :</label>
+                    <textarea id="custom-text-input" rows="3" class="w-full bg-slate-800/80 border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500 transition-colors" placeholder="Scrivi il tuo testo qua..."></textarea>
+                </div>
+
+                <!-- Background Customization -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold mb-3 text-indigo-200">Gradienti pront:</label>
+                    <div class="grid grid-cols-5 gap-3 mb-4">
+                        <button class="preset-btn gradient-1 h-10 rounded-lg border-2 border-white/40 hover:scale-105 transition-transform" data-bg="gradient-1"></button>
+                        <button class="preset-btn gradient-2 h-10 rounded-lg border-2 border-transparent hover:scale-105 transition-transform" data-bg="gradient-2"></button>
+                        <button class="preset-btn gradient-3 h-10 rounded-lg border-2 border-transparent hover:scale-105 transition-transform" data-bg="gradient-3"></button>
+                        <button class="preset-btn gradient-4 h-10 rounded-lg border-2 border-transparent hover:scale-105 transition-transform" data-bg="gradient-4"></button>
+                        <button class="preset-btn gradient-5 h-10 rounded-lg border-2 border-transparent hover:scale-105 transition-transform" data-bg="gradient-5"></button>
+                    </div>
+
+                    <label class="block text-sm font-semibold mb-2 text-indigo-200">Carica la tua immagine:</label>
+                    <input type="file" id="bg-file-input" accept="image/*" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 cursor-pointer">
+                    
+                    <label class="block text-sm font-semibold mt-4 mb-2 text-indigo-200">Sfondo a tinta unita:</label>
+                    <div class="flex items-center gap-3">
+                        <input type="color" id="bg-color-picker" value="#0f172a" class="w-12 h-10 rounded bg-transparent cursor-pointer">
+                        <span id="color-code-display" class="text-xs text-gray-400 font-mono">#0f172a</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="border-t border-white/10 pt-4 mt-6 flex justify-between items-center">
+                <button id="reset-btn" class="text-xs text-rose-400 hover:text-rose-300 underline">Ripristina impostazioni</button>
+                <button id="save-close-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-xl text-sm font-semibold transition-colors">Salvare</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        // DOM Elements
+        const daysEl = document.getElementById('days');
+        const hoursEl = document.getElementById('hours');
+        const minutesEl = document.getElementById('minutes');
+        const secondsEl = document.getElementById('seconds');
+        
+        const customTextDisplay = document.getElementById('custom-text-display');
+        const customTextInput = document.getElementById('custom-text-input');
+        const bgContainer = document.getElementById('bg-container');
+        
+        const settingsModal = document.getElementById('settings-modal');
+        const modalPanel = document.getElementById('modal-panel');
+        const toggleSettingsBtn = document.getElementById('toggle-settings-btn');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const saveCloseBtn = document.getElementById('save-close-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        
+        const hideUiBtn = document.getElementById('hide-ui-btn');
+        const showUiBtn = document.getElementById('show-ui-btn');
+        const controlsBar = document.getElementById('controls-bar');
+        const footerBar = document.getElementById('footer-bar');
+        
+        const presetBtns = document.querySelectorAll('.preset-btn');
+        const bgFileInput = document.getElementById('bg-file-input');
+        const bgColorPicker = document.getElementById('bg-color-picker');
+        const colorCodeDisplay = document.getElementById('color-code-display');
+
+        // Target Date Logic: Dec 26, 2026 15:00:00 Rome Time (UTC+1 / CET)
+        // ISO 8601 with offset +01:00 for Rome Winter Time (CET)
+        const targetDate = new Date('2026-12-26T15:00:00+01:00').getTime();
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const difference = targetDate - now;
+
+            if (difference <= 0) {
+                daysEl.textContent = '00';
+                hoursEl.textContent = '00';
+                minutesEl.textContent = '00';
+                secondsEl.textContent = '00';
+                return;
+            }
+
+            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+            daysEl.textContent = String(days).padStart(2, '0');
+            hoursEl.textContent = String(hours).padStart(2, '0');
+            minutesEl.textContent = String(minutes).padStart(2, '0');
+            secondsEl.textContent = String(seconds).padStart(2, '0');
+        }
+
+        // Run countdown timer immediately and set interval
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+
+        // Custom Text Syncing
+        function updateCustomText(text) {
+            const val = text.trim() ? text : "Fino al 26 dicembre!";
+            customTextDisplay.textContent = val;
+            customTextInput.value = val;
+            localStorage.setItem('countdown_custom_text', val);
+        }
+
+        customTextDisplay.addEventListener('click', () => {
+            openModal();
+            customTextInput.focus();
+        });
+
+        customTextInput.addEventListener('input', (e) => {
+            updateCustomText(e.target.value);
+        });
+
+        // Background Customization Handlers
+        function clearBackgroundStyles() {
+            bgContainer.className = "min-h-screen text-white relative flex flex-col justify-between overflow-x-hidden bg-cover bg-center bg-no-repeat transition-all duration-700";
+            bgContainer.style.backgroundImage = '';
+            bgContainer.style.backgroundColor = '';
+        }
+
+        // Preset Gradients
+        presetBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const presetClass = btn.getAttribute('data-bg');
+                clearBackgroundStyles();
+                bgContainer.classList.add(presetClass);
+                
+                // Active Border UI update
+                presetBtns.forEach(b => b.classList.replace('border-white/40', 'border-transparent'));
+                btn.classList.replace('border-transparent', 'border-white/40');
+                
+                localStorage.setItem('countdown_bg_type', 'preset');
+                localStorage.setItem('countdown_bg_val', presetClass);
+            });
+        });
+
+        // Custom Image Upload
+        bgFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const imgData = event.target.result;
+                    clearBackgroundStyles();
+                    bgContainer.style.backgroundImage = `url('${imgData}')`;
+                    
+                    localStorage.setItem('countdown_bg_type', 'image');
+                    localStorage.setItem('countdown_bg_val', imgData);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Color Picker
+        bgColorPicker.addEventListener('input', (e) => {
+            const color = e.target.value;
+            colorCodeDisplay.textContent = color;
+            clearBackgroundStyles();
+            bgContainer.style.backgroundColor = color;
+            
+            localStorage.setItem('countdown_bg_type', 'color');
+            localStorage.setItem('countdown_bg_val', color);
+        });
+
+        // Modal Controls
+        function openModal() {
+            settingsModal.classList.remove('opacity-0', 'pointer-events-none');
+            modalPanel.classList.remove('translate-x-full');
+        }
+
+        function closeModal() {
+            settingsModal.classList.add('opacity-0', 'pointer-events-none');
+            modalPanel.classList.add('translate-x-full');
+        }
+
+        toggleSettingsBtn.addEventListener('click', openModal);
+        closeModalBtn.addEventListener('click', closeModal);
+        saveCloseBtn.addEventListener('click', closeModal);
+
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) closeModal();
+        });
+
+        // Hide/Show UI mode
+        hideUiBtn.addEventListener('click', () => {
+            controlsBar.classList.add('opacity-0', 'pointer-events-none');
+            footerBar.classList.add('opacity-0', 'pointer-events-none');
+            showUiBtn.classList.remove('hidden');
+        });
+
+        showUiBtn.addEventListener('click', () => {
+            controlsBar.classList.remove('opacity-0', 'pointer-events-none');
+            footerBar.classList.remove('opacity-0', 'pointer-events-none');
+            showUiBtn.classList.add('hidden');
+        });
+
+        // Reset Settings
+        resetBtn.addEventListener('click', () => {
+            localStorage.clear();
+            updateCustomText("Fino al 26 dicembre!");
+            clearBackgroundStyles();
+            bgContainer.classList.add('gradient-1');
+            closeModal();
+        });
+
+        // Load Saved Data from LocalStorage
+        function loadSavedState() {
+            const savedText = localStorage.getItem('countdown_custom_text');
+            if (savedText) {
+                updateCustomText(savedText);
+            } else {
+                updateCustomText("Fino al 26 dicembre!");
+            }
+
+            const bgType = localStorage.getItem('countdown_bg_type');
+            const bgVal = localStorage.getItem('countdown_bg_val');
+
+            if (bgType && bgVal) {
+                clearBackgroundStyles();
+                if (bgType === 'preset') {
+                    bgContainer.classList.add(bgVal);
+                } else if (bgType === 'image') {
+                    bgContainer.style.backgroundImage = `url('${bgVal}')`;
+                } else if (bgType === 'color') {
+                    bgContainer.style.backgroundColor = bgVal;
+                    bgColorPicker.value = bgVal;
+                    colorCodeDisplay.textContent = bgVal;
+                }
+            }
+        }
+
+        // Initialize state
+        loadSavedState();
+    </script>
+</body>
+</html>
